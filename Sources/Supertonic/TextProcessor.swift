@@ -50,15 +50,28 @@ struct TextProcessor {
     static func chunks(_ text: String, maximumLength: Int = 120) -> [String] {
         var result: [String] = []
         var chunk = ""
-        for character in text {
+        let characters = Array(text)
+        for (index, character) in characters.enumerated() {
             chunk.append(character)
-            if chunk.count >= maximumLength || ".!?。！？\n".contains(character) {
+            let isBoundary = chunk.count >= maximumLength || ".!?。！？\n".contains(character)
+            if isBoundary && !isInsideNumber(characters, after: index) {
                 append(chunk, to: &result)
                 chunk = ""
             }
         }
         append(chunk, to: &result)
         return result
+    }
+
+    private static func isInsideNumber(_ characters: [Character], after index: Int) -> Bool {
+        guard index + 1 < characters.count else { return false }
+        let current = characters[index]
+        let next = characters[index + 1]
+        if current.isNumber {
+            if next.isNumber || next == "%" || next == "٪" { return true }
+            return ".,:٫٬".contains(next) && index + 2 < characters.count && characters[index + 2].isNumber
+        }
+        return ".,:٫٬".contains(current) && index > 0 && characters[index - 1].isNumber && next.isNumber
     }
 
     private static func append(_ text: String, to chunks: inout [String]) {

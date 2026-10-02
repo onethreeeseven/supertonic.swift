@@ -24,7 +24,7 @@ struct Comparison: Encodable {
 }
 
 struct Collection: Encodable {
-    let libraryVersion = "0.2.0"
+    let libraryVersion = "0.2.1"
     let modelRevision = ModelAssets.revision
     let voice = "F1"
     let steps = 16

@@ -31,6 +31,22 @@ struct SupertonicTests {
         #expect(chunks.allSatisfy { $0.count <= 120 })
     }
 
+    @Test(arguments: ["3.7%", "3,7%", "٣٫٧٪", "1.24.2", "2024", "14:35"])
+    func numericExpressionsStayTogether(expression: String) {
+        let text = "Value: " + expression + " increased. Next sentence."
+        let chunks = TextProcessor.chunks(text)
+        #expect(chunks == ["Value: " + expression + " increased.", "Next sentence."])
+    }
+
+    @Test(arguments: ["3.7%", "3,7%", "٣٫٧٪", "1.24.2", "14:35"])
+    func lengthLimitDoesNotSplitNumbers(expression: String) {
+        let text = "Value: " + expression + " increased."
+        for maximumLength in 8...(7 + expression.count) {
+            let chunks = TextProcessor.chunks(text, maximumLength: maximumLength)
+            #expect(chunks.contains { $0.contains(expression) })
+        }
+    }
+
     @Test func noiseIsDeterministicAndFinite() {
         var first = NoiseGenerator(state: 42)
         var second = NoiseGenerator(state: 42)
