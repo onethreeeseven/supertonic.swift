@@ -117,9 +117,8 @@ struct SupertonicTests {
     }
 
     @Test func malformedVoiceDimensionsAreRejectedBeforeCallingRuntime() throws {
-        let runtime = try Runtime()
         let component = VoiceStyle.Component(data: [[[1]]], dimensions: [1, 1, 2])
-        #expect(throws: SupertonicError.self) { try component.tensor(runtime: runtime) }
+        #expect(throws: SupertonicError.self) { try component.validate() }
     }
 
     @Test func modelSourcesPreserveRevisionAndAssetNames() throws {

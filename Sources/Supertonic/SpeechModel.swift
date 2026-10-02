@@ -73,11 +73,20 @@ final class SpeechModel {
         let data = try decode(
             VoiceStyle.self,
             from: assets.directory.appendingPathComponent("voice_styles/\(voice.rawValue).json"))
-        let style = try VoiceTensors(
-            duration: data.durationStyle.tensor(runtime: runtime),
-            text: data.textStyle.tensor(runtime: runtime))
+        try data.validate()
+        let style = try tensors(for: data)
         styles[voice] = style
         return style
+    }
+
+    func style(for voice: CustomVoice) throws -> VoiceTensors {
+        try tensors(for: voice.style)
+    }
+
+    private func tensors(for style: VoiceStyle) throws -> VoiceTensors {
+        return try VoiceTensors(
+            duration: style.durationStyle.tensor(runtime: runtime),
+            text: style.textStyle.tensor(runtime: runtime))
     }
 
     func synthesize(

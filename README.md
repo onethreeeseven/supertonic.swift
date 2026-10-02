@@ -20,7 +20,7 @@ Requires Swift 6.0 or later. Add the package and its library product to `Package
 ```swift
 .package(
     url: "https://github.com/onethreeeseven/supertonic.swift.git",
-    from: "0.2.2"
+    from: "0.3.0"
 )
 ```
 
@@ -535,6 +535,20 @@ let audio = try await synthesizer.synthesize(
 | `seed` | Random | A fixed seed reproduces the initial noise for repeatable generation |
 
 Non-finite speeds use the default. Empty text produces empty audio. Long text is grouped at sentence boundaries, with Korean and Japanese targeting 120 characters and other language tags targeting 300, as in the reference implementation. Sentences exceeding that target are split at whitespace; words, numbers, and unspaced runs stay intact. Separate chunks have a 0.3-second gap. Cancelling the calling task stops synthesis between chunks and denoising steps; an individual ONNX operation finishes before cancellation is checked.
+
+### Custom voices
+
+Load a Supertonic 3 voice-style JSON once, then pass the voice to either `speak` or `synthesize`:
+
+```swift
+let voice = try CustomVoice(contentsOf: voiceURL)
+try await synthesizer.speak("안녕하세요.", in: .korean, voice: voice)
+let audio = try await synthesizer.synthesize("Welcome back.", in: .english, voice: voice)
+```
+
+Use `CustomVoice(data: jsonData)` for data from a download or app resource. The initializer validates the tensor shapes, nested data, and finite values. The loaded voice owns its data, so the source file can be removed after loading. No extra model or dependency is needed.
+
+Use a JSON exported for Supertonic 3, or one of its bundled `voice_styles/*.json` files. The JSON contains numeric voice features; it does not accept a recording or a natural-language voice description. Importing a profile enables local synthesis with that voice; creating a profile from a recording requires a separate voice-cloning pipeline.
 
 ## Model downloads and offline apps
 

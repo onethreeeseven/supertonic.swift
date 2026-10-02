@@ -8,7 +8,8 @@ public actor Supertonic {
         model = try SpeechModel(assets: assets, threads: threads)
     }
 
-    public static func load(from directory: URL = ModelAssets.defaultDirectory, threads: Int = 2) async throws
+    public static func load(from directory: URL = ModelAssets.defaultDirectory, threads: Int = 2)
+        async throws
         -> Supertonic
     {
         let assets = try await ModelAssets.download(to: directory)
@@ -26,6 +27,17 @@ public actor Supertonic {
         try await playback.play(audio)
     }
 
+    public func speak(
+        _ text: String,
+        in language: SynthesisLanguage,
+        voice: CustomVoice,
+        options: SynthesisOptions = SynthesisOptions()
+    ) async throws {
+        let audio = try synthesize(text, in: language, voice: voice, options: options)
+        try Task.checkCancellation()
+        try await playback.play(audio)
+    }
+
     public func stop() async {
         await playback.stop()
     }
@@ -36,9 +48,27 @@ public actor Supertonic {
         voice: Voice = .female1,
         options: SynthesisOptions = SynthesisOptions()
     ) throws -> Audio {
+        try synthesize(text, in: language, options: options) { try model.style(for: voice) }
+    }
+
+    public func synthesize(
+        _ text: String,
+        in language: SynthesisLanguage,
+        voice: CustomVoice,
+        options: SynthesisOptions = SynthesisOptions()
+    ) throws -> Audio {
+        try synthesize(text, in: language, options: options) { try model.style(for: voice) }
+    }
+
+    private func synthesize(
+        _ text: String,
+        in language: SynthesisLanguage,
+        options: SynthesisOptions,
+        style: () throws -> VoiceTensors
+    ) throws -> Audio {
         let chunks = TextProcessor.chunks(text, maximumLength: language.maximumChunkLength)
         guard !chunks.isEmpty else { return Audio(samples: [], sampleRate: model.sampleRate) }
-        let style = try model.style(for: voice)
+        let style = try style()
         var generator = NoiseGenerator(state: options.seed)
         var samples: [Float] = []
         for chunk in chunks {

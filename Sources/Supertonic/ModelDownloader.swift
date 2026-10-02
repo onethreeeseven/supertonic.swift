@@ -74,7 +74,7 @@ actor ModelDownloader {
         guard let error = error as? SupertonicError else { return false }
         switch error {
         case .download, .invalidModel: return true
-        case .runtime, .playback: return false
+        case .runtime, .playback, .invalidVoice: return false
         }
     }
 
