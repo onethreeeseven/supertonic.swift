@@ -28,14 +28,14 @@ struct SupertonicTests {
         let text = String(repeating: "水", count: 1000)
         let chunks = TextProcessor.chunks(text)
         #expect(chunks.joined() == text)
-        #expect(chunks.allSatisfy { $0.count <= 120 })
+        #expect(chunks == [text])
     }
 
     @Test(arguments: ["3.7%", "3,7%", "٣٫٧٪", "1.24.2", "2024", "14:35"])
     func numericExpressionsStayTogether(expression: String) {
         let text = "Value: " + expression + " increased. Next sentence."
         let chunks = TextProcessor.chunks(text)
-        #expect(chunks == ["Value: " + expression + " increased.", "Next sentence."])
+        #expect(chunks == [text])
     }
 
     @Test(arguments: ["3.7%", "3,7%", "٣٫٧٪", "1.24.2", "14:35"])
@@ -45,6 +45,57 @@ struct SupertonicTests {
             let chunks = TextProcessor.chunks(text, maximumLength: maximumLength)
             #expect(chunks.contains { $0.contains(expression) })
         }
+    }
+
+    @Test func shortSentencesShareOneChunk() {
+        #expect(TextProcessor.chunks("Hello world. Welcome back!") == ["Hello world. Welcome back!"])
+    }
+
+    @Test func sentenceBoundariesArePreferredOverLengthCuts() {
+        let text = "First sentence. Second sentence. Third sentence."
+        #expect(
+            TextProcessor.chunks(text, maximumLength: 34) == [
+                "First sentence. Second sentence.", "Third sentence.",
+            ])
+    }
+
+    @Test func longSentencesSplitOnlyBetweenWholeWords() {
+        let text = "Temperature humidity and calibration changed significantly."
+        let chunks = TextProcessor.chunks(text, maximumLength: 20)
+        #expect(chunks == ["Temperature humidity", "and calibration", "changed", "significantly."])
+        #expect(chunks.joined(separator: " ") == text)
+    }
+
+    @Test func titlesInitialsAndClosingQuotesStayWithTheirSentences() {
+        let text = "Dr. Elena Rossi met J. Smith in the U.S. and said \"It rose 3.7%.\" Next sentence."
+        let first = "Dr. Elena Rossi met J. Smith in the U.S. and said \"It rose 3.7%.\""
+        #expect(TextProcessor.chunks(text, maximumLength: first.count) == [first, "Next sentence."])
+    }
+
+    @Test func sentencesWithoutSpacesKeepTheirPunctuation() {
+        #expect(TextProcessor.chunks("こんにちは。ありがとう！", maximumLength: 6) == ["こんにちは。", "ありがとう！"])
+        #expect(TextProcessor.chunks("“Hello!” Next.", maximumLength: 8) == ["“Hello!”", "Next."])
+    }
+
+    @Test func readmeSamplesUseExactlyOneChunk() throws {
+        let directory = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
+            .deletingLastPathComponent().deletingLastPathComponent()
+        let url = directory.appendingPathComponent("Examples/AudioSamples/passages.json")
+        let passages = try JSONDecoder().decode([SamplePassage].self, from: Data(contentsOf: url))
+        #expect(passages.count == 32)
+        for passage in passages {
+            #expect(passage.text.count <= 120)
+            let language = try #require(SynthesisLanguage(rawValue: passage.code))
+            #expect(
+                TextProcessor.chunks(passage.text, maximumLength: language.maximumChunkLength) == [
+                    passage.text
+                ])
+        }
+    }
+
+    private struct SamplePassage: Decodable {
+        let code: String
+        let text: String
     }
 
     @Test func noiseIsDeterministicAndFinite() {

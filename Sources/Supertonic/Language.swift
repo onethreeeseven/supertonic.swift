@@ -34,6 +34,13 @@ public enum SynthesisLanguage: String, CaseIterable, Codable, Sendable {
     case vietnamese = "vi"
     case unspecified = "na"
 
+    var maximumChunkLength: Int {
+        switch self {
+        case .korean, .japanese: 120
+        default: 300
+        }
+    }
+
     public init?(languageCode: String) {
         let primary =
             languageCode.replacingOccurrences(of: "_", with: "-")

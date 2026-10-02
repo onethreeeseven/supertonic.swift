@@ -36,7 +36,7 @@ public actor Supertonic {
         voice: Voice = .female1,
         options: SynthesisOptions = SynthesisOptions()
     ) throws -> Audio {
-        let chunks = TextProcessor.chunks(text)
+        let chunks = TextProcessor.chunks(text, maximumLength: language.maximumChunkLength)
         guard !chunks.isEmpty else { return Audio(samples: [], sampleRate: model.sampleRate) }
         let style = try model.style(for: voice)
         var generator = NoiseGenerator(state: options.seed)
