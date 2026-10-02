@@ -7,7 +7,7 @@ import PackageDescription
     let runtimeExclusions: [String] = []
     let binaryTargets: [Target] = []
 #else
-    let runtimeDependencies: [Target.Dependency] = ["onnxruntime"]
+    let runtimeDependencies: [Target.Dependency] = [.target(name: "onnxruntime", condition: .when(platforms: [.macOS, .iOS]))]
     let runtimeResources: [Resource] = []
     let runtimeExclusions = ["Runtime"]
     let binaryTargets: [Target] = [
@@ -31,7 +31,8 @@ let package = Package(
             name: "CSupertonic",
             dependencies: runtimeDependencies,
             linkerSettings: [
-                .linkedLibrary("dl", .when(platforms: [.linux])),
+                .linkedLibrary("dl", .when(platforms: [.linux, .android])),
+                .linkedLibrary("aaudio", .when(platforms: [.android])),
                 .linkedLibrary("c++", .when(platforms: [.macOS, .iOS])),
                 .linkedFramework("CoreML", .when(platforms: [.macOS, .iOS])),
             ]

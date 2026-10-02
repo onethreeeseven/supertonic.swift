@@ -35,7 +35,7 @@ import Foundation
             player = nil
         }
     }
-#elseif os(Linux)
+#elseif os(Linux) || os(Android)
     import CSupertonic
 
     actor AudioPlayback {

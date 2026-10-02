@@ -6,7 +6,7 @@ struct NoiseGenerator {
     mutating func gaussian() -> Float {
         let first = max(Float.leastNonzeroMagnitude, uniform())
         let second = uniform()
-        return sqrt(-2 * log(first)) * cos(2 * .pi * second)
+        return (-2 * logf(first)).squareRoot() * cosf(2 * .pi * second)
     }
 
     private mutating func uniform() -> Float {

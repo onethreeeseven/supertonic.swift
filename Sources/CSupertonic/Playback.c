@@ -1,5 +1,5 @@
 #include "CSupertonic.h"
-#if defined(__linux__)
+#if defined(__linux__) && !defined(__ANDROID__)
 #include <dlfcn.h>
 #include <errno.h>
 #include <stdlib.h>

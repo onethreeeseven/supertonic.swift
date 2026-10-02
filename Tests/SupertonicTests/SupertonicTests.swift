@@ -80,7 +80,8 @@ struct SupertonicTests {
     @Test func readmeSamplesUseExactlyOneChunk() throws {
         let directory = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
             .deletingLastPathComponent().deletingLastPathComponent()
-        let url = directory.appendingPathComponent("Examples/AudioSamples/passages.json")
+        let url = ProcessInfo.processInfo.environment["SUPERTONIC_TEST_PASSAGES"].map { URL(fileURLWithPath: $0) }
+            ?? directory.appendingPathComponent("Examples/AudioSamples/passages.json")
         let passages = try JSONDecoder().decode([SamplePassage].self, from: Data(contentsOf: url))
         #expect(passages.count == 32)
         for passage in passages {
@@ -151,6 +152,10 @@ struct SupertonicTests {
         #expect(try Data(contentsOf: downloaded) == Data(contentsOf: expected))
     }
 
+}
+
+@Suite(.serialized)
+struct ModelInferenceTests {
     private static let samples = [
         "en": "Hello world.", "ko": "안녕하세요.", "ja": "こんにちは。", "ar": "مرحبا بالعالم.",
         "bg": "Здравей свят.", "cs": "Ahoj světe.", "da": "Hej verden.", "de": "Hallo Welt.",

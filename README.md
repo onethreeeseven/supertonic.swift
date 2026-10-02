@@ -1,8 +1,8 @@
 # supertonic.swift
 
-[![CI](https://github.com/onethreeeseven/supertonic.swift/actions/workflows/swift.yml/badge.svg?branch=main)](https://github.com/onethreeeseven/supertonic.swift/actions/workflows/swift.yml) [![Release](https://img.shields.io/github/v/release/onethreeeseven/supertonic.swift)](https://github.com/onethreeeseven/supertonic.swift/releases/latest) [![Swift 6.0+](https://img.shields.io/badge/Swift-6.0%2B-F05138?logo=swift&logoColor=white)](Package.swift) [![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20iOS%20%7C%20Linux-454545)](#platforms) [![Code license: MIT](https://img.shields.io/badge/code_license-MIT-blue)](LICENSE)
+[![CI](https://github.com/onethreeeseven/supertonic.swift/actions/workflows/swift.yml/badge.svg?branch=main)](https://github.com/onethreeeseven/supertonic.swift/actions/workflows/swift.yml) [![Release](https://img.shields.io/github/v/release/onethreeeseven/supertonic.swift)](https://github.com/onethreeeseven/supertonic.swift/releases/latest) [![Swift 6.0+](https://img.shields.io/badge/Swift-6.0%2B-F05138?logo=swift&logoColor=white)](Package.swift) [![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20iOS%20%7C%20Android%20%7C%20Linux-454545)](#platforms) [![Code license: MIT](https://img.shields.io/badge/code_license-MIT-blue)](LICENSE)
 
-Run [Supertonic 3](https://huggingface.co/supertone-oss-archive/supertonic-3) text-to-speech directly in Swift. Generate speech locally on macOS, iOS, and Linux with 31 languages, ten voices, and language-agnostic `na` mode.
+Run [Supertonic 3](https://huggingface.co/supertone-oss-archive/supertonic-3) text-to-speech directly in Swift. Generate speech locally on macOS, iOS, Android, and Linux with 31 languages, ten voices, and language-agnostic `na` mode.
 
 - CPU inference with audio returned as Float32 samples or a ready-to-save WAV.
 - Zero Swift package dependencies. ONNX Runtime is included through a binary artifact on Apple platforms and bundled libraries on Linux.
@@ -20,7 +20,7 @@ Requires Swift 6.0 or later. Add the package and its library product to `Package
 ```swift
 .package(
     url: "https://github.com/onethreeeseven/supertonic.swift.git",
-    from: "0.4.0"
+    from: "0.5.0"
 )
 ```
 
@@ -600,10 +600,23 @@ Concurrent requests within one process share a download, and retries reuse compl
 | macOS | 14; Apple Silicon or Intel | Official XCFramework fetched by SwiftPM |
 | iOS | 15; device and simulator | Official XCFramework linked into the app |
 | Linux | x86_64 or ARM64; glibc 2.27+ | Shared libraries included as package resources |
+| Android | API 28+ with the Swift Android SDK | Official ONNX Runtime Android AAR packaged in the app |
 
 The inference runtime is ONNX Runtime 1.24.2. Apple builds link the system C++ and CoreML libraries. Linux builds load the bundled CPU runtime and require a glibc distribution. Both Linux architectures together add approximately 39 MB to a source checkout; Apple builds exclude those resources.
 
-Using the package requires no Python environment, package manager setup, or separately installed ONNX Runtime. Model weights are distributed separately from the source repository.
+On Apple platforms and Linux, using the package requires no Python environment or separately installed ONNX Runtime. Model weights are distributed separately from the source repository.
+
+### Android apps
+
+Add the library to your Swift Android target and package ONNX Runtime in your Android app:
+
+```kotlin
+dependencies {
+    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.24.2")
+}
+```
+
+The AAR supplies `libonnxruntime.so` for the device ABI. The Swift library loads it from the app's native library search path. `speak` uses Android's AAudio output directly and releases its audio stream when playback finishes or is cancelled. Synthesis and playback use the same Swift API as Apple platforms and Linux.
 
 ## Command line
 

@@ -6,7 +6,9 @@ final class Runtime {
 
     init() throws {
         var error: UnsafeMutablePointer<CChar>?
-        #if os(Linux)
+        #if os(Android)
+            let result = supertonic_runtime_create("libonnxruntime.so", &error)
+        #elseif os(Linux)
             #if arch(x86_64)
                 let architecture = "x86_64"
             #elseif arch(arm64)

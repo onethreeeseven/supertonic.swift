@@ -45,27 +45,6 @@ struct CustomVoiceTests {
         #expect(throws: SupertonicError.self) { try component.validate() }
     }
 
-    @Test func importedProfilesMatchPresetsAndSupportBothSpeechMethods() async throws {
-        guard let path = ProcessInfo.processInfo.environment["SUPERTONIC_TEST_MODELS"] else { return }
-        let directory = URL(fileURLWithPath: path)
-        let synthesizer = try Supertonic(assets: ModelAssets(directory: directory))
-        let options = SynthesisOptions(quality: .fast, seed: 42)
-        for preset in [Voice.female1, .male5] {
-            let url = directory.appendingPathComponent("voice_styles/\(preset.rawValue).json")
-            let voice = try CustomVoice(contentsOf: url)
-            for language in [SynthesisLanguage.korean, .english] {
-                let text = language == .korean ? "안녕하세요." : "Welcome back."
-                let expected = try await synthesizer.synthesize(
-                    text, in: language, with: preset, options: options)
-                let actual = try await synthesizer.synthesize(
-                    text, in: language, with: voice, options: options)
-                #expect(actual.samples == expected.samples)
-                #expect(actual.samples.contains { abs($0) > 0.001 })
-            }
-            try await synthesizer.speak("", in: .korean, with: voice)
-        }
-    }
-
     private struct VoiceDocument: Encodable {
         var textStyle = Component(rows: 50, columns: 256)
         var durationStyle = Component(rows: 8, columns: 16)
@@ -94,4 +73,28 @@ struct CustomVoiceTests {
             dimensions = [1, rows, columns]
         }
     }
+}
+
+extension ModelInferenceTests {
+    @Test func importedProfilesMatchPresetsAndSupportBothSpeechMethods() async throws {
+        guard let path = ProcessInfo.processInfo.environment["SUPERTONIC_TEST_MODELS"] else { return }
+        let directory = URL(fileURLWithPath: path)
+        let synthesizer = try Supertonic(assets: ModelAssets(directory: directory))
+        let options = SynthesisOptions(quality: .fast, seed: 42)
+        for preset in [Voice.female1, .male5] {
+            let url = directory.appendingPathComponent("voice_styles/\(preset.rawValue).json")
+            let voice = try CustomVoice(contentsOf: url)
+            for language in [SynthesisLanguage.korean, .english] {
+                let text = language == .korean ? "안녕하세요." : "Welcome back."
+                let expected = try await synthesizer.synthesize(
+                    text, in: language, with: preset, options: options)
+                let actual = try await synthesizer.synthesize(
+                    text, in: language, with: voice, options: options)
+                #expect(actual.samples == expected.samples)
+                #expect(actual.samples.contains { abs($0) > 0.001 })
+            }
+            try await synthesizer.speak("", in: .korean, with: voice)
+        }
+    }
+
 }
