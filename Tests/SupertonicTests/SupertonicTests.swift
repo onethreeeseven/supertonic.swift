@@ -112,6 +112,21 @@ struct SupertonicTests {
         "tr": "Merhaba dünya.", "uk": "Привіт світ.", "vi": "Xin chào thế giới.", "na": "안녕하세요.",
     ]
 
+    @Test func decimalSynthesisMatchesOneContinuousModelInvocation() async throws {
+        guard let path = ProcessInfo.processInfo.environment["SUPERTONIC_TEST_MODELS"] else { return }
+        let assets = ModelAssets(directory: URL(fileURLWithPath: path))
+        let text = "A 3.7% increase does not prove causation."
+        let options = SynthesisOptions(quality: .fast, seed: 42)
+        let model = try SpeechModel(assets: assets, threads: 2)
+        let style = try model.style(for: .female1)
+        var generator = NoiseGenerator(state: options.seed)
+        let expected = try model.synthesize(
+            text, language: .english, style: style, options: options, generator: &generator)
+        let synthesizer = try Supertonic(assets: assets)
+        let actual = try await synthesizer.synthesize(text, in: .english, options: options)
+        #expect(actual.samples == expected)
+    }
+
     @Test func actualInference() async throws {
         guard let path = ProcessInfo.processInfo.environment["SUPERTONIC_TEST_MODELS"] else { return }
         let synthesizer = try Supertonic(assets: ModelAssets(directory: URL(fileURLWithPath: path)))
