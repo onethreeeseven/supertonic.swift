@@ -50,7 +50,7 @@ Keep the synthesizer around for later requests. `audio.samples`, `audio.sampleRa
 
 ## Languages and `na` mode
 
-Use an explicit language when you know it:
+Pass `SynthesisLanguage` cases directly, such as `.korean`, `.english`, or `.japanese`:
 
 ```swift
 let audio = try await synthesizer.synthesize(
@@ -67,33 +67,39 @@ let audio = try await synthesizer.synthesize("안녕하세요. Hello world.")
 
 `na` lets the model process text without an explicit language selection. Pronunciation quality outside its training coverage is not guaranteed.
 
-Parse a BCP 47 code and choose a fallback explicitly:
+| Code | Swift case | Code | Swift case |
+| --- | --- | --- | --- |
+| `en` | `.english` | `ko` | `.korean` |
+| `ja` | `.japanese` | `ar` | `.arabic` |
+| `bg` | `.bulgarian` | `cs` | `.czech` |
+| `da` | `.danish` | `de` | `.german` |
+| `el` | `.greek` | `es` | `.spanish` |
+| `et` | `.estonian` | `fi` | `.finnish` |
+| `fr` | `.french` | `hi` | `.hindi` |
+| `hr` | `.croatian` | `hu` | `.hungarian` |
+| `id` | `.indonesian` | `it` | `.italian` |
+| `lt` | `.lithuanian` | `lv` | `.latvian` |
+| `nl` | `.dutch` | `pl` | `.polish` |
+| `pt` | `.portuguese` | `ro` | `.romanian` |
+| `ru` | `.russian` | `sk` | `.slovak` |
+| `sl` | `.slovenian` | `sv` | `.swedish` |
+| `tr` | `.turkish` | `uk` | `.ukrainian` |
+| `vi` | `.vietnamese` | | |
+
+<details>
+<summary>Optional: convert a locale identifier</summary>
+
+Use `init(languageCode:)` when your app already has a BCP 47 locale string:
 
 ```swift
-let language = SynthesisLanguage(languageCode: "ko-KR") ?? .unspecified
-let audio = try await synthesizer.synthesize("안녕하세요.", language: language)
+if let language = SynthesisLanguage(languageCode: "ko-KR") {
+    let audio = try await synthesizer.synthesize("안녕하세요.", language: language)
+}
 ```
 
-Unknown codes return `nil`. Empty codes and `na` resolve to `.unspecified`.
+Unknown codes return `nil`, so the caller can decide how to handle an unsupported locale. Empty codes and `na` resolve to `.unspecified`.
 
-| Code | Language | Code | Language |
-| --- | --- | --- | --- |
-| `en` | English | `ko` | Korean |
-| `ja` | Japanese | `ar` | Arabic |
-| `bg` | Bulgarian | `cs` | Czech |
-| `da` | Danish | `de` | German |
-| `el` | Greek | `es` | Spanish |
-| `et` | Estonian | `fi` | Finnish |
-| `fr` | French | `hi` | Hindi |
-| `hr` | Croatian | `hu` | Hungarian |
-| `id` | Indonesian | `it` | Italian |
-| `lt` | Lithuanian | `lv` | Latvian |
-| `nl` | Dutch | `pl` | Polish |
-| `pt` | Portuguese | `ro` | Romanian |
-| `ru` | Russian | `sk` | Slovak |
-| `sl` | Slovenian | `sv` | Swedish |
-| `tr` | Turkish | `uk` | Ukrainian |
-| `vi` | Vietnamese | | |
+</details>
 
 ## Voices and generation controls
 
