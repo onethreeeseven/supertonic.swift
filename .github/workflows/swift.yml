@@ -1,0 +1,21 @@
+name: Swift
+on: [push, pull_request]
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [macos-15, ubuntu-24.04, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: '6.1.3'
+      - run: swift test
+      - run: swift run supertonic 'Hello world.' sample.wav en F1 "$RUNNER_TEMP/models"
+      - run: SUPERTONIC_TEST_MODELS="$RUNNER_TEMP/models" swift test
+  ios:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - run: swift build --target Supertonic --triple arm64-apple-ios15.0 --sdk "$(xcrun --sdk iphoneos --show-sdk-path)"
