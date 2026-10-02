@@ -18,7 +18,7 @@ Requires Swift 6.0 or later. Add the package and its library product to `Package
 ```swift
 .package(
     url: "https://github.com/onethreeeseven/supertonic.swift.git",
-    from: "0.1.2"
+    from: "0.2.0"
 )
 ```
 
@@ -31,7 +31,20 @@ Requires Swift 6.0 or later. Add the package and its library product to `Package
 )
 ```
 
-Then generate a WAV:
+Speak without saving an audio file:
+
+```swift
+import Supertonic
+
+let synthesizer = try await Supertonic.load()
+try await synthesizer.speak("안녕하세요.", in: .korean)
+```
+
+`speak` synthesizes in memory, waits until playback finishes, and releases the audio. It accepts the same language, voice, and options as `synthesize`. A new playback on the same synthesizer replaces the previous one. Use `await synthesizer.stop()` to stop playback, or cancel the calling task to interrupt synthesis and playback. Playback interruption throws `CancellationError`.
+
+On iOS, configure your app's `AVAudioSession` for its intended playback behavior. On Linux, playback uses the system ALSA library (`libasound.so.2`) and its default output device; synthesis itself does not require ALSA.
+
+To save a WAV:
 
 ```swift
 import Foundation
@@ -40,7 +53,7 @@ import Supertonic
 let synthesizer = try await Supertonic.load()
 let audio = try await synthesizer.synthesize(
     "Hello world.",
-    language: .english
+    in: .english
 )
 
 try audio.write(to: URL(fileURLWithPath: "hello.wav"))
@@ -50,56 +63,50 @@ Keep the synthesizer around for later requests. `audio.samples`, `audio.sampleRa
 
 ## Languages and `na` mode
 
-Pass `SynthesisLanguage` cases directly, such as `.korean`, `.english`, or `.japanese`:
+Use an explicit language when you know it:
 
 ```swift
 let audio = try await synthesizer.synthesize(
     "안녕하세요.",
-    language: .korean
+    in: .korean
 )
 ```
 
-Omitting the language uses `.unspecified`, which sends the model's `na` tag:
+The language argument is required. When the language is unknown, pass `.unspecified` explicitly to send the model's `na` tag:
 
 ```swift
-let audio = try await synthesizer.synthesize("안녕하세요. Hello world.")
+let audio = try await synthesizer.synthesize("안녕하세요. Hello world.", in: .unspecified)
 ```
 
 `na` lets the model process text without an explicit language selection. Pronunciation quality outside its training coverage is not guaranteed.
 
-| Code | Swift case | Code | Swift case |
-| --- | --- | --- | --- |
-| `en` | `.english` | `ko` | `.korean` |
-| `ja` | `.japanese` | `ar` | `.arabic` |
-| `bg` | `.bulgarian` | `cs` | `.czech` |
-| `da` | `.danish` | `de` | `.german` |
-| `el` | `.greek` | `es` | `.spanish` |
-| `et` | `.estonian` | `fi` | `.finnish` |
-| `fr` | `.french` | `hi` | `.hindi` |
-| `hr` | `.croatian` | `hu` | `.hungarian` |
-| `id` | `.indonesian` | `it` | `.italian` |
-| `lt` | `.lithuanian` | `lv` | `.latvian` |
-| `nl` | `.dutch` | `pl` | `.polish` |
-| `pt` | `.portuguese` | `ro` | `.romanian` |
-| `ru` | `.russian` | `sk` | `.slovak` |
-| `sl` | `.slovenian` | `sv` | `.swedish` |
-| `tr` | `.turkish` | `uk` | `.ukrainian` |
-| `vi` | `.vietnamese` | | |
-
-<details>
-<summary>Optional: convert a locale identifier</summary>
-
-Use `init(languageCode:)` when your app already has a BCP 47 locale string:
+Parse a BCP 47 code and choose a fallback explicitly:
 
 ```swift
-if let language = SynthesisLanguage(languageCode: "ko-KR") {
-    let audio = try await synthesizer.synthesize("안녕하세요.", language: language)
-}
+let language = SynthesisLanguage(languageCode: "ko-KR") ?? .unspecified
+let audio = try await synthesizer.synthesize("안녕하세요.", in: language)
 ```
 
-Unknown codes return `nil`, so the caller can decide how to handle an unsupported locale. Empty codes and `na` resolve to `.unspecified`.
+Unknown codes return `nil`. Empty codes and `na` resolve to `.unspecified`.
 
-</details>
+| Code | Language | Code | Language |
+| --- | --- | --- | --- |
+| `en` | English | `ko` | Korean |
+| `ja` | Japanese | `ar` | Arabic |
+| `bg` | Bulgarian | `cs` | Czech |
+| `da` | Danish | `de` | German |
+| `el` | Greek | `es` | Spanish |
+| `et` | Estonian | `fi` | Finnish |
+| `fr` | French | `hi` | Hindi |
+| `hr` | Croatian | `hu` | Hungarian |
+| `id` | Indonesian | `it` | Italian |
+| `lt` | Lithuanian | `lv` | Latvian |
+| `nl` | Dutch | `pl` | Polish |
+| `pt` | Portuguese | `ro` | Romanian |
+| `ru` | Russian | `sk` | Slovak |
+| `sl` | Slovenian | `sv` | Swedish |
+| `tr` | Turkish | `uk` | Ukrainian |
+| `vi` | Vietnamese | | |
 
 ## Voices and generation controls
 
@@ -108,7 +115,7 @@ Choose from `.female1` through `.female5` or `.male1` through `.male5`. These co
 ```swift
 let audio = try await synthesizer.synthesize(
     "Welcome back.",
-    language: .english,
+    in: .english,
     voice: .male1,
     options: SynthesisOptions(
         quality: .high,

@@ -10,7 +10,8 @@ jobs:
     container: swift:6.1-noble
     steps:
       - uses: actions/checkout@v4
-      - run: swift test
+      - run: apt-get update && apt-get install -y libasound2t64
+      - run: SUPERTONIC_TEST_PLAYBACK=1 swift test
       - run: swift run supertonic 'Hello world.' sample.wav en F1 /tmp/models
       - run: SUPERTONIC_TEST_MODELS=/tmp/models swift test
   macos:

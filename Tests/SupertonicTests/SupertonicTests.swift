@@ -102,7 +102,7 @@ struct SupertonicTests {
         for language in SynthesisLanguage.allCases {
             let text = Self.samples[language.rawValue] ?? "Hello world."
             let audio = try await synthesizer.synthesize(
-                text, language: language, options: SynthesisOptions(quality: .fast, seed: 42))
+                text, in: language, options: SynthesisOptions(quality: .fast, seed: 42))
             #expect(audio.duration > 0.1 && audio.duration < 20)
             #expect(audio.samples.allSatisfy { $0.isFinite })
             #expect(audio.samples.contains { abs($0) > 0.001 })

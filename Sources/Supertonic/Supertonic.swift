@@ -2,6 +2,7 @@ import Foundation
 
 public actor Supertonic {
     private let model: SpeechModel
+    private let playback = AudioPlayback()
 
     public init(assets: ModelAssets, threads: Int = 2) throws {
         model = try SpeechModel(assets: assets, threads: threads)
@@ -14,9 +15,24 @@ public actor Supertonic {
         return try Supertonic(assets: assets, threads: threads)
     }
 
+    public func speak(
+        _ text: String,
+        in language: SynthesisLanguage,
+        voice: Voice = .female1,
+        options: SynthesisOptions = SynthesisOptions()
+    ) async throws {
+        let audio = try synthesize(text, in: language, voice: voice, options: options)
+        try Task.checkCancellation()
+        try await playback.play(audio)
+    }
+
+    public func stop() async {
+        await playback.stop()
+    }
+
     public func synthesize(
         _ text: String,
-        language: SynthesisLanguage = .unspecified,
+        in language: SynthesisLanguage,
         voice: Voice = .female1,
         options: SynthesisOptions = SynthesisOptions()
     ) throws -> Audio {
