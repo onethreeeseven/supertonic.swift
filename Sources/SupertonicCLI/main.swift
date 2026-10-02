@@ -26,7 +26,7 @@ struct SupertonicCommand {
         }
         let synthesizer = try await Supertonic.load(from: request.modelDirectory)
         let audio = try await synthesizer.synthesize(
-            request.text, in: request.language, voice: request.voice)
+            request.text, in: request.language, with: request.voice)
         try audio.write(to: request.outputURL)
         print("Saved \(arguments[1]): \(audio.duration) seconds, \(audio.sampleRate) Hz")
     }

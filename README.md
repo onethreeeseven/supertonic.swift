@@ -20,7 +20,7 @@ Requires Swift 6.0 or later. Add the package and its library product to `Package
 ```swift
 .package(
     url: "https://github.com/onethreeeseven/supertonic.swift.git",
-    from: "0.3.0"
+    from: "0.4.0"
 )
 ```
 
@@ -519,7 +519,7 @@ Choose from `.female1` through `.female5` or `.male1` through `.male5`. These co
 let audio = try await synthesizer.synthesize(
     "Welcome back.",
     in: .english,
-    voice: .male1,
+    with: .male1,
     options: SynthesisOptions(
         quality: .high,
         speed: 1.1,
@@ -542,8 +542,8 @@ Load a Supertonic 3 voice-style JSON once, then pass the voice to either `speak`
 
 ```swift
 let voice = try CustomVoice(contentsOf: voiceURL)
-try await synthesizer.speak("안녕하세요.", in: .korean, voice: voice)
-let audio = try await synthesizer.synthesize("Welcome back.", in: .english, voice: voice)
+try await synthesizer.speak("안녕하세요.", in: .korean, with: voice)
+let audio = try await synthesizer.synthesize("Welcome back.", in: .english, with: voice)
 ```
 
 Use `CustomVoice(data: jsonData)` for data from a download or app resource. The initializer validates the tensor shapes, nested data, and finite values. The loaded voice owns its data, so the source file can be removed after loading. No extra model or dependency is needed.

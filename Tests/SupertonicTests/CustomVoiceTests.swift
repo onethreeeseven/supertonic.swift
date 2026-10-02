@@ -56,13 +56,13 @@ struct CustomVoiceTests {
             for language in [SynthesisLanguage.korean, .english] {
                 let text = language == .korean ? "안녕하세요." : "Welcome back."
                 let expected = try await synthesizer.synthesize(
-                    text, in: language, voice: preset, options: options)
+                    text, in: language, with: preset, options: options)
                 let actual = try await synthesizer.synthesize(
-                    text, in: language, voice: voice, options: options)
+                    text, in: language, with: voice, options: options)
                 #expect(actual.samples == expected.samples)
                 #expect(actual.samples.contains { abs($0) > 0.001 })
             }
-            try await synthesizer.speak("", in: .korean, voice: voice)
+            try await synthesizer.speak("", in: .korean, with: voice)
         }
     }
 

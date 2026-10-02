@@ -19,10 +19,10 @@ public actor Supertonic {
     public func speak(
         _ text: String,
         in language: SynthesisLanguage,
-        voice: Voice = .female1,
+        with voice: Voice = .female1,
         options: SynthesisOptions = SynthesisOptions()
     ) async throws {
-        let audio = try synthesize(text, in: language, voice: voice, options: options)
+        let audio = try synthesize(text, in: language, with: voice, options: options)
         try Task.checkCancellation()
         try await playback.play(audio)
     }
@@ -30,10 +30,10 @@ public actor Supertonic {
     public func speak(
         _ text: String,
         in language: SynthesisLanguage,
-        voice: CustomVoice,
+        with voice: CustomVoice,
         options: SynthesisOptions = SynthesisOptions()
     ) async throws {
-        let audio = try synthesize(text, in: language, voice: voice, options: options)
+        let audio = try synthesize(text, in: language, with: voice, options: options)
         try Task.checkCancellation()
         try await playback.play(audio)
     }
@@ -45,7 +45,7 @@ public actor Supertonic {
     public func synthesize(
         _ text: String,
         in language: SynthesisLanguage,
-        voice: Voice = .female1,
+        with voice: Voice = .female1,
         options: SynthesisOptions = SynthesisOptions()
     ) throws -> Audio {
         try synthesize(text, in: language, options: options) { try model.style(for: voice) }
@@ -54,7 +54,7 @@ public actor Supertonic {
     public func synthesize(
         _ text: String,
         in language: SynthesisLanguage,
-        voice: CustomVoice,
+        with voice: CustomVoice,
         options: SynthesisOptions = SynthesisOptions()
     ) throws -> Audio {
         try synthesize(text, in: language, options: options) { try model.style(for: voice) }
