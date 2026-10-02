@@ -30,8 +30,8 @@ public struct Audio: Sendable {
     }
 }
 
-private extension Data {
-    mutating func appendInteger<Value: FixedWidthInteger>(_ value: Value) {
+extension Data {
+    fileprivate mutating func appendInteger<Value: FixedWidthInteger>(_ value: Value) {
         Swift.withUnsafeBytes(of: value.littleEndian) { append(contentsOf: $0) }
     }
 }

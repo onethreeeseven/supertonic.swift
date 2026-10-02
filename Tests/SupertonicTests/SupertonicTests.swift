@@ -48,7 +48,7 @@ struct SupertonicTests {
 
     @Test func malformedVoiceDimensionsAreRejectedBeforeCallingRuntime() throws {
         let runtime = try Runtime()
-        let component = VoiceStyle.Component(data: [[[1]]], dims: [1, 1, 2])
+        let component = VoiceStyle.Component(data: [[[1]]], dimensions: [1, 1, 2])
         #expect(throws: SupertonicError.self) { try component.tensor(runtime: runtime) }
     }
 
@@ -60,7 +60,7 @@ struct SupertonicTests {
         "id": "Halo dunia.", "it": "Ciao mondo.", "lt": "Labas pasauli.", "lv": "Sveika pasaule.",
         "nl": "Hallo wereld.", "pl": "Witaj świecie.", "pt": "Olá mundo.", "ro": "Salut lume.",
         "ru": "Привет мир.", "sk": "Ahoj svet.", "sl": "Pozdravljen svet.", "sv": "Hej världen.",
-        "tr": "Merhaba dünya.", "uk": "Привіт світ.", "vi": "Xin chào thế giới.", "na": "안녕하세요."
+        "tr": "Merhaba dünya.", "uk": "Привіт світ.", "vi": "Xin chào thế giới.", "na": "안녕하세요.",
     ]
 
     @Test func actualInference() async throws {
@@ -68,7 +68,8 @@ struct SupertonicTests {
         let synthesizer = try Supertonic(assets: ModelAssets(directory: URL(fileURLWithPath: path)))
         for language in SynthesisLanguage.allCases {
             let text = Self.samples[language.rawValue] ?? "Hello world."
-            let audio = try await synthesizer.synthesize(text, language: language, options: SynthesisOptions(quality: .fast, seed: 42))
+            let audio = try await synthesizer.synthesize(
+                text, language: language, options: SynthesisOptions(quality: .fast, seed: 42))
             #expect(audio.duration > 0.1 && audio.duration < 20)
             #expect(audio.samples.allSatisfy { $0.isFinite })
             #expect(audio.samples.contains { abs($0) > 0.001 })

@@ -13,20 +13,37 @@ struct TextProcessor {
     }
 
     static func normalize(_ text: String) -> String {
-        var result = text.decomposedStringWithCompatibilityMapping
-        result = String(String.UnicodeScalarView(result.unicodeScalars.filter { !isEmoji($0.value) }))
-        for (source, replacement) in replacements {
-            result = result.replacingOccurrences(of: source, with: replacement)
+        let decomposed = text.decomposedStringWithCompatibilityMapping
+        let scalars = decomposed.unicodeScalars.filter { !isEmoji($0.value) }
+        let withoutEmoji = String(String.UnicodeScalarView(scalars))
+        let replaced = replaceSymbols(in: withoutEmoji)
+        let spaced = normalizeSpacing(in: replaced)
+        let quoted = collapseRepeatedQuotes(in: spaced)
+        guard let last = quoted.last, !".!?;:,'\")]}…。」』】〉》›»".contains(last) else { return quoted }
+        return quoted + "."
+    }
+
+    private static func replaceSymbols(in text: String) -> String {
+        replacements.reduce(text) { result, replacement in
+            result.replacingOccurrences(of: replacement.source, with: replacement.value)
         }
-        result = result.replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
+    }
+
+    private static func normalizeSpacing(in text: String) -> String {
+        let spaced = text.replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
             .trimmingCharacters(in: .whitespacesAndNewlines)
-        for punctuation in [",", ".", "!", "?", ";", ":", "'"] {
-            result = result.replacingOccurrences(of: " " + punctuation, with: punctuation)
+        return [",", ".", "!", "?", ";", ":", "'"].reduce(spaced) { result, punctuation in
+            result.replacingOccurrences(of: " " + punctuation, with: punctuation)
         }
+    }
+
+    private static func collapseRepeatedQuotes(in text: String) -> String {
+        var result = text
         for quote in ["\"", "'"] {
-            while result.contains(quote + quote) { result = result.replacingOccurrences(of: quote + quote, with: quote) }
+            while result.contains(quote + quote) {
+                result = result.replacingOccurrences(of: quote + quote, with: quote)
+            }
         }
-        if let last = result.last, !".!?;:,'\")]}…。」』】〉》›»".contains(last) { result += "." }
         return result
     }
 
@@ -50,33 +67,15 @@ struct TextProcessor {
     }
 
     private static func isEmoji(_ value: UInt32) -> Bool {
-        (0x1F300...0x1FAFF).contains(value) || (0x2600...0x27BF).contains(value) || (0x1F1E6...0x1F1FF).contains(value)
+        (0x1F300...0x1FAFF).contains(value) || (0x2600...0x27BF).contains(value)
+            || (0x1F1E6...0x1F1FF).contains(value)
     }
 
-    private static let replacements: [(String, String)] = [
+    private static let replacements: [(source: String, value: String)] = [
         ("–", "-"), ("‑", "-"), ("—", "-"), ("_", " "),
         ("“", "\""), ("”", "\""), ("‘", "'"), ("’", "'"), ("´", "'"), ("`", "'"),
         ("[", " "), ("]", " "), ("|", " "), ("/", " "), ("#", " "), ("→", " "), ("←", " "),
         ("♥", ""), ("☆", ""), ("♡", ""), ("©", ""), ("\\", ""), ("@", " at "),
-        ("e.g.,", "for example, "), ("i.e.,", "that is, ")
+        ("e.g.,", "for example, "), ("i.e.,", "that is, "),
     ]
-}
-
-struct NoiseGenerator {
-    var state: UInt64
-
-    mutating func gaussian() -> Float {
-        let first = max(Float.leastNonzeroMagnitude, uniform())
-        let second = uniform()
-        return sqrt(-2 * log(first)) * cos(2 * .pi * second)
-    }
-
-    private mutating func uniform() -> Float {
-        state &+= 0x9E3779B97F4A7C15
-        var value = state
-        value = (value ^ (value >> 30)) &* 0xBF58476D1CE4E5B9
-        value = (value ^ (value >> 27)) &* 0x94D049BB133111EB
-        value ^= value >> 31
-        return Float(value >> 40) / Float(1 << 24)
-    }
 }

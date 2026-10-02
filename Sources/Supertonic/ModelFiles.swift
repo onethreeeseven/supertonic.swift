@@ -6,12 +6,12 @@ struct ModelFile: Sendable {
 
     static let all: [ModelFile] = [
         ModelFile(path: "LICENSE", size: 15007),
-        ModelFile(path: "onnx/duration_predictor.onnx", size: 3700147),
-        ModelFile(path: "onnx/text_encoder.onnx", size: 36416150),
+        ModelFile(path: "onnx/duration_predictor.onnx", size: 3_700_147),
+        ModelFile(path: "onnx/text_encoder.onnx", size: 36_416_150),
         ModelFile(path: "onnx/tts.json", size: 8253),
         ModelFile(path: "onnx/unicode_indexer.json", size: 277676),
-        ModelFile(path: "onnx/vector_estimator.onnx", size: 256534781),
-        ModelFile(path: "onnx/vocoder.onnx", size: 101424195),
+        ModelFile(path: "onnx/vector_estimator.onnx", size: 256_534_781),
+        ModelFile(path: "onnx/vocoder.onnx", size: 101_424_195),
         ModelFile(path: "voice_styles/F1.json", size: 292046),
         ModelFile(path: "voice_styles/F2.json", size: 292423),
         ModelFile(path: "voice_styles/F3.json", size: 290794),
