@@ -11,10 +11,12 @@ The generator uses F1, high quality (16 steps), speed 1.05, seed 42, and two inf
 
 The passages test dates, times, decimals, names, technical vocabulary, punctuation, and sentence transitions. They are demonstration inputs, not a validated pronunciation benchmark.
 
-For GitHub's inline attachment player, encode each WAV as an audio-only MP4 and upload it through the Markdown editor. FFmpeg is only a sample publishing tool; the Swift library does not depend on it.
+For GitHub's inline attachment player, encode each WAV as an audio-only MP4 and upload it as a GitHub media attachment. FFmpeg is only a sample publishing tool; the Swift library does not depend on it.
 
 ```sh
 ffmpeg -i ko.wav -vn -c:a aac -b:a 160k -movflags +faststart ko.mp4
 ```
 
 The [sample release](https://github.com/onethreeeseven/supertonic.swift/releases/tag/audio-samples-0.2.0) preserves original WAVs, encoded attachments, the inputs, measurements, and SHA-256 checksums. Nothing in the generated audio is edited after synthesis; the MP4 copies apply lossy AAC encoding.
+
+`attachments.json` maps each recording to its permanent GitHub media URL. The README embeds these URLs as standalone paragraphs, which GitHub renders as players.
