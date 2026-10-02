@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation
+    url: https://github.com/onethreeeseven/supertonic.swift#readme
+    about: Read the installation guide, API examples, platform requirements, and model download instructions.

@@ -1,0 +1,44 @@
+name: Bug report
+description: Report a reproducible problem with the library, downloads, or generated audio.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Check existing issues and the README before submitting a report.
+        Include a small reproduction so we can test the same behavior.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe the problem and what you expected to happen.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Include a minimal Swift example or the exact CLI command. For audio issues, include the text, language tag, voice, quality, speed, and seed.
+      render: swift
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Package and Swift versions
+      placeholder: "Supertonic 0.1.2, Swift 6.2"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Platform and architecture
+      placeholder: "macOS 15 / ARM64, iOS 18 / device, Ubuntu 24.04 / x86_64"
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs and additional context
+      description: Include error messages, whether models are bundled or downloaded, and the model revision if relevant. Attach a short audio sample for synthesis problems.
+      render: text

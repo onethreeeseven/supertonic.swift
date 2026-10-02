@@ -197,6 +197,12 @@ SUPERTONIC_TEST_MODELS=/path/to/models swift test
 
 The model-enabled tests synthesize speech for every language tag, including `na`, and check for finite, non-silent audio. [CI](https://github.com/onethreeeseven/supertonic.swift/actions/workflows/swift.yml) runs unit tests, first-download generation, and model-enabled tests on macOS and Linux x86_64/ARM64. It also compiles the library for an iOS device target.
 
+## Contributing and support
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, testing, and pull request guidelines. Use the [issue forms](https://github.com/onethreeeseven/supertonic.swift/issues/new/choose) to report a bug or propose a feature.
+
+Support maintenance, platform testing, and model preservation through [GitHub Sponsors](https://github.com/sponsors/onethreeeseven).
+
 ## Licenses and acknowledgments
 
 | Component | License |
