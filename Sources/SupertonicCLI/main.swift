@@ -3,7 +3,16 @@ import Supertonic
 
 @main
 struct SupertonicCommand {
-    static func main() async throws {
+    static func main() async {
+        do {
+            try await run()
+        } catch {
+            FileHandle.standardError.write(Data("\(error.localizedDescription)\n".utf8))
+            exit(1)
+        }
+    }
+
+    static func run() async throws {
         let arguments = Array(CommandLine.arguments.dropFirst())
         guard arguments.count >= 2 else {
             print("Usage: supertonic <text> <output.wav> [language=na] [voice=F1] [model-directory]")

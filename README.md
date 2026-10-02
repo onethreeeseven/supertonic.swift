@@ -5,7 +5,7 @@ Supertonic 3 speech synthesis in Swift for macOS, iOS, and Linux. Runs on the CP
 ## Install
 
 ```swift
-.package(url: "https://github.com/onethreeeseven/supertonic.swift.git", from: "0.1.0")
+.package(url: "https://github.com/onethreeeseven/supertonic.swift.git", from: "0.1.1")
 ```
 
 Add `.product(name: "Supertonic", package: "supertonic.swift")` to your target dependencies.

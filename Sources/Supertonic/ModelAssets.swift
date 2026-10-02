@@ -62,7 +62,8 @@ private actor ModelDownloader {
     private static func fetch(_ file: ModelFile, to directory: URL, session: URLSession) async throws {
         let destination = directory.appendingPathComponent(file.path)
         if ModelAssets.hasExpectedSize(destination, size: file.size) { return }
-        let address = "https://huggingface.co/supertone-oss-archive/supertonic-3/resolve/\(ModelAssets.revision)/\(file.path)"
+        let endpoint = file.path.hasSuffix(".onnx") ? "resolve" : "raw"
+        let address = "https://huggingface.co/supertone-oss-archive/supertonic-3/\(endpoint)/\(ModelAssets.revision)/\(file.path)"
         guard let remoteURL = URL(string: address) else { throw SupertonicError.invalidModel("Invalid model asset URL") }
         let (temporaryURL, response) = try await session.download(from: remoteURL)
         defer { try? FileManager.default.removeItem(at: temporaryURL) }
