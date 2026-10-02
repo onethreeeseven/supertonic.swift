@@ -33,25 +33,49 @@ actor ModelDownloader {
     private static func fetch(_ file: ModelFile, to directory: URL, session: URLSession) async throws {
         let destination = directory.appendingPathComponent(file.path)
         if ModelAssets.hasExpectedSize(destination, size: file.size) { return }
-        let remoteURL = try remoteURL(for: file)
-        let (temporaryURL, response) = try await session.download(from: remoteURL)
+        let sources = try [ModelSource.huggingFace, .githubRelease].map { try $0.url(for: file) }
+        let temporaryURL = try await download(file, from: sources[...], session: session)
         defer { try? FileManager.default.removeItem(at: temporaryURL) }
+        try install(temporaryURL, at: destination, expectedSize: file.size)
+    }
+
+    static func download(_ file: ModelFile, from sources: ArraySlice<URL>, session: URLSession) async throws
+        -> URL
+    {
+        guard let source = sources.first else {
+            throw SupertonicError.invalidModel("No model download sources are available")
+        }
+        do {
+            return try await download(file, from: source, session: session)
+        } catch let error where sources.count > 1 && canRetryDownload(after: error) {
+            try Task.checkCancellation()
+            return try await download(file, from: sources.dropFirst(), session: session)
+        }
+    }
+
+    private static func download(_ file: ModelFile, from source: URL, session: URLSession) async throws -> URL
+    {
+        let (temporaryURL, response) = try await session.download(from: source)
+        var isValidated = false
+        defer {
+            if !isValidated { try? FileManager.default.removeItem(at: temporaryURL) }
+        }
         let status = (response as? HTTPURLResponse)?.statusCode ?? 0
         guard status == 200 else { throw SupertonicError.download(file.path, status) }
         guard ModelAssets.hasExpectedSize(temporaryURL, size: file.size) else {
             throw SupertonicError.invalidModel("Downloaded \(file.path) has an unexpected size")
         }
-        try install(temporaryURL, at: destination, expectedSize: file.size)
+        isValidated = true
+        return temporaryURL
     }
 
-    private static func remoteURL(for file: ModelFile) throws -> URL {
-        let endpoint = file.path.hasSuffix(".onnx") ? "resolve" : "raw"
-        let address =
-            "https://huggingface.co/supertone-oss-archive/supertonic-3/\(endpoint)/\(ModelAssets.revision)/\(file.path)"
-        guard let url = URL(string: address) else {
-            throw SupertonicError.invalidModel("Invalid model asset URL")
+    private static func canRetryDownload(after error: any Error) -> Bool {
+        if let error = error as? URLError { return error.code != .cancelled }
+        guard let error = error as? SupertonicError else { return false }
+        switch error {
+        case .download, .invalidModel: return true
+        case .runtime: return false
         }
-        return url
     }
 
     private static func install(_ source: URL, at destination: URL, expectedSize: Int) throws {

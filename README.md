@@ -18,7 +18,7 @@ Requires Swift 6.0 or later. Add the package and its library product to `Package
 ```swift
 .package(
     url: "https://github.com/onethreeeseven/supertonic.swift.git",
-    from: "0.1.1"
+    from: "0.1.2"
 )
 ```
 
@@ -159,7 +159,9 @@ models/
     └── M1.json … M5.json
 ```
 
-Downloads use revision [`aafc6e32416a594460b32413efc49d7fe4ce6d46`](https://huggingface.co/supertone-oss-archive/supertonic-3/tree/aafc6e32416a594460b32413efc49d7fe4ce6d46). Concurrent requests within one process share a download, and retries reuse completed files. Each file is staged before installation. Validation checks HTTP status and expected file size; it does not verify cryptographic content hashes.
+Downloads first use Hugging Face and automatically fall back to our [preserved model release](https://github.com/onethreeeseven/supertonic.swift/releases/tag/models-supertonic-3-aafc6e32416a) on network errors, unavailable files, or invalid download sizes. Both sources contain revision [`aafc6e32416a594460b32413efc49d7fe4ce6d46`](https://huggingface.co/supertone-oss-archive/supertonic-3/tree/aafc6e32416a594460b32413efc49d7fe4ce6d46). The preserved release includes the original license, a [source manifest](Models/supertonic-3.json), SHA-256 checksums, and `supertonic-3-aafc6e32416a.tar.gz` for offline installation. Extract the archive and pass its `models/` directory to `ModelAssets(directory:)`.
+
+Concurrent requests within one process share a download, and retries reuse completed files. Each file is staged before installation. Validation checks HTTP status and expected file size; it does not verify cryptographic content hashes.
 
 ## Platforms
 

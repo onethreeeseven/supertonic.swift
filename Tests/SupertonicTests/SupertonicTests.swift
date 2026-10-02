@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(FoundationNetworking)
+    import FoundationNetworking
+#endif
 import Testing
 @testable import Supertonic
 
@@ -50,6 +53,36 @@ struct SupertonicTests {
         let runtime = try Runtime()
         let component = VoiceStyle.Component(data: [[[1]]], dimensions: [1, 1, 2])
         #expect(throws: SupertonicError.self) { try component.tensor(runtime: runtime) }
+    }
+
+    @Test func modelSourcesPreserveRevisionAndAssetNames() throws {
+        let file = ModelFile(path: "onnx/tts.json", size: 8253)
+        let upstream = try ModelSource.huggingFace.url(for: file)
+        let mirror = try ModelSource.githubRelease.url(for: file)
+        #expect(upstream.path.contains("/raw/" + ModelAssets.revision + "/"))
+        #expect(mirror.lastPathComponent == "tts.json")
+        #expect(mirror.path.contains(ModelSource.preservationTag))
+        let names = try ModelFile.all.map { try ModelSource.githubRelease.url(for: $0).lastPathComponent }
+        #expect(Set(names).count == ModelFile.all.count)
+    }
+
+    @Test(arguments: ["unavailable-model.json", "LICENSE"])
+    func unavailableOrInvalidUpstreamFallsBackToPreservedModel(assetName: String) async throws {
+        guard let path = ProcessInfo.processInfo.environment["SUPERTONIC_TEST_MODELS"] else { return }
+        let file = ModelFile(path: "onnx/tts.json", size: 8253)
+        let unavailable = try #require(
+            URL(
+                string:
+                    "https://github.com/onethreeeseven/supertonic.swift/releases/download/\(ModelSource.preservationTag)/\(assetName)"
+            ))
+        let preserved = try ModelSource.githubRelease.url(for: file)
+        let session = URLSession(configuration: .ephemeral)
+        defer { session.invalidateAndCancel() }
+        let downloaded = try await ModelDownloader.download(
+            file, from: [unavailable, preserved][...], session: session)
+        defer { try? FileManager.default.removeItem(at: downloaded) }
+        let expected = URL(fileURLWithPath: path).appendingPathComponent(file.path)
+        #expect(try Data(contentsOf: downloaded) == Data(contentsOf: expected))
     }
 
     private static let samples = [
