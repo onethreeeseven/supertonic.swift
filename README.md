@@ -13,6 +13,18 @@ Run [Supertonic 3](https://huggingface.co/supertone-oss-archive/supertonic-3) te
 
 The first `Supertonic.load()` downloads approximately 400 MB of model assets. Subsequent loads reuse the cache. Speech synthesis runs on the device; text stays local.
 
+Apps can download the voices before the first playback and display byte progress:
+
+```swift
+let assets = try await ModelAssets.download { progress in
+    print("\(progress.downloadedBytes) / \(progress.totalBytes) bytes")
+}
+let synthesizer = try Supertonic(assets: assets)
+```
+
+Cancel the calling task to stop the download. Completed files are retained and reused on retry; an interrupted file is downloaded again. `ModelAssets.totalDownloadBytes`, `assets.downloadedBytes`, and `assets.isComplete` let an app check the download size and local availability without making network requests. The progress callback can run off the main actor; dispatch UI updates to the main actor.
+
+
 ## Quick start
 
 Requires Swift 6.0 or later. Add the package and its library product to `Package.swift`:
@@ -20,7 +32,7 @@ Requires Swift 6.0 or later. Add the package and its library product to `Package
 ```swift
 .package(
     url: "https://github.com/onethreeeseven/supertonic.swift.git",
-    from: "0.5.0"
+    from: "0.6.0"
 )
 ```
 

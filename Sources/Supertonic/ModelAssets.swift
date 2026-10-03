@@ -19,6 +19,21 @@ public struct ModelAssets: Sendable {
         try await ModelDownloader.shared.download(to: directory)
     }
 
+    public static let totalDownloadBytes = Int64(ModelFile.all.reduce(0) { $0 + $1.size })
+
+    public var downloadedBytes: Int64 {
+        Int64(ModelFile.all.filter {
+            Self.hasExpectedSize(directory.appendingPathComponent($0.path), size: $0.size)
+        }.reduce(0) { $0 + $1.size })
+    }
+
+    public static func download(
+        to directory: URL = defaultDirectory,
+        progress: @escaping @Sendable (ModelDownloadProgress) -> Void
+    ) async throws -> ModelAssets {
+        try await ModelDownloader.fetchAssets(to: directory, progress: progress)
+    }
+
     public var isComplete: Bool {
         ModelFile.all.allSatisfy {
             Self.hasExpectedSize(directory.appendingPathComponent($0.path), size: $0.size)
