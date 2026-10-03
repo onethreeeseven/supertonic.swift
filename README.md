@@ -32,7 +32,7 @@ Requires Swift 6.0 or later. Add the package and its library product to `Package
 ```swift
 .package(
     url: "https://github.com/onethreeeseven/supertonic.swift.git",
-    from: "0.6.0"
+    from: "0.6.1"
 )
 ```
 

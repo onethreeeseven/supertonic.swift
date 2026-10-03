@@ -102,7 +102,7 @@ actor ModelDownloader {
                 }
                 guard !Task.isCancelled else { return }
                 if let task = tasks.first { progress(min(fileBytes, task.countOfBytesReceived)) }
-                do { try await Task.sleep(for: .milliseconds(100)) } catch { return }
+                do { try await Task.sleep(nanoseconds: 100_000_000) } catch { return }
             }
         }
     }

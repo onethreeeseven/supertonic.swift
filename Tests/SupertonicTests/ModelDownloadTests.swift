@@ -40,7 +40,7 @@ struct ModelDownloadTests {
         defer { session.invalidateAndCancel() }
         let source = try ModelSource.githubRelease.url(for: file)
         let download = Task { try await ModelDownloader.download(file, from: [source][...], session: session) }
-        try await Task.sleep(for: .milliseconds(200))
+        try await Task.sleep(nanoseconds: 200_000_000)
         download.cancel()
         do {
             let destination = try await download.value
